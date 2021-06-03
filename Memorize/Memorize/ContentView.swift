@@ -8,31 +8,38 @@
 import SwiftUI
 
 struct ContentView: View {
+    @ObservedObject var viewModel: EmojiMemoryGame
+    
     var body: some View {
-        HStack() {
-            ForEach(0..<4) { index in
-                CardView(isFaceUp: false)
+            ScrollView{
+                LazyVGrid(columns: [GridItem(),GridItem(),GridItem()]) {
+                    ForEach(viewModel.cards) { card in
+                        CardView(card: card).onTapGesture {
+                            viewModel.choose(card)
+                        }
+                    }
+                    .aspectRatio(2/3, contentMode: .fit)
                 }
             }
-        .padding()
-        .foregroundColor(.orange)
-        .font(Font.largeTitle)
+            .font(Font.largeTitle)
+            .padding()
+            .foregroundColor(.orange)
     }
 }
 
 struct CardView: View {
-    var isFaceUp: Bool
+    let card: MemoryGame<String>.Card
     var body: some View {
         ZStack() {
-            if isFaceUp{
-                RoundedRectangle(cornerRadius: 10.0)
-                    .fill(Color.white)
-                RoundedRectangle(cornerRadius: 10.0)
-                    .stroke(lineWidth: 3)
-                Text("👻").font(Font.largeTitle)
+            let shape = RoundedRectangle(cornerRadius: 20.0)
+            if card.isFaceUp{
+                shape.fill(Color.white)
+                shape.stroke(lineWidth: 3)
+                Text(card.content).font(Font.largeTitle)
+            }else if card.isMatched {
+                shape.opacity(0)
             }else{
-                 RoundedRectangle(cornerRadius: 10.0)
-                     .fill()
+                 shape.fill()
             }
         }
     }
@@ -53,6 +60,9 @@ struct CardView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        ContentView(viewModel: EmojiMemoryGame())
+            .preferredColorScheme(.light)
+        ContentView(viewModel: EmojiMemoryGame())
+            .preferredColorScheme(.dark)
     }
 }
